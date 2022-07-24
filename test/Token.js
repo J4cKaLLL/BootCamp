@@ -6,14 +6,16 @@ const tokens = (n) => {
 }
 
 describe("Token", ()=> {
-	let token, accounts, deployer, receiver
+	let token, accounts, deployer, receiver, exchange
 
-	beforeEach(async () => {		
+	beforeEach(async () => {				
 		const Token = await ethers.getContractFactory('Token')		
 		token = await Token.deploy("LotRy","LOTR",1000000)
 		accounts = await ethers.getSigners()
 		deployer = accounts[0]
 		receiver = accounts[1]
+		exchange = accounts[2]
+		
 	})
 
 	describe("Deployment", ()=>{
@@ -83,6 +85,38 @@ describe("Token", ()=> {
 				const amount = tokens(100)
 				await expect(token.connect(deployer).transfer("0x000000000000000000000000000000000", amount)).to.be.reverted
 			})
+		})
+	})
+	describe("Approving Tokens",()=>{
+		let amount, transaction, result
+
+		beforeEach(async() => {
+			amount = tokens(100)
+			transaction = await token.connect(deployer).approve(exchange.address, amount)
+			result = await transaction.wait()
+
+		})
+		describe("Success",()=>{
+			it("Allocates an allowance for delegated token spending", async() =>{
+				expect ( await token.allowance(deployer.address, exchange.address)).to.equal(amount)
+			})
+			it("emits a Approval event", async() =>{
+				const event = result.events[0]			
+				expect(event.event).to.equal("Approval")
+				const args = event.args
+				expect(args.owner).to.equal(deployer.address)
+				expect(args.spender).to.equal(exchange.address)
+				expect(args.value).to.equal(amount)
+			})
+		})
+		describe("Failure",()=>{
+			it("Reject Invalid Spenders", async()=>{
+				await expect(token.connect(deployer).approve("0x000000000000000000000000000000000", amount)).to.be.reverted
+			})
+			it("Reject owner = spender", async()=>{
+				await expect(token.connect(deployer).approve(deployer.address, amount)).to.be.reverted
+			})
+			
 		})
 	})
 })
