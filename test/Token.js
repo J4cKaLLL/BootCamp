@@ -118,7 +118,6 @@ describe("Token", ()=> {
 			
 		})
 	})
-
 	describe("Delegated Token Transfers", () => {
 		
 		let amount, transaction, result
