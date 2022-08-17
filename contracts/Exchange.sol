@@ -31,6 +31,8 @@ contract Exchange {
 // Withdraw
 
 	function withdrawToken(address _token, uint256 _amount) public {
+		//Ensure user has enough tokens to withdraw
+		require(tokens[_token][msg.sender] >= _amount);
 		// Tranfer tokens to user		
 		Token(_token).transfer(msg.sender, _amount);
 // Update user balance
