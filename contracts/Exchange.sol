@@ -10,17 +10,21 @@ contract Exchange {
 	mapping(address => mapping (address => uint256)) public tokens;
 	mapping(uint256 => _Order) public orders;
 	uint256 public orderCount; 
+	mapping(uint256 => bool) public orderCancelled; // true or false 
 
 	event Deposit(
 		address token, 
 		address user, 
 		uint256 amount, 
-		uint balance);
+		uint balance
+	);
+
 	event Withdraw(
 		address token, 
 		address user, 
 		uint256 amount, 
-		uint balance);
+		uint balance
+	);
 
 	event Order(
 			// Attributes of an order
@@ -30,8 +34,19 @@ contract Exchange {
 		uint256 amountGet, // Amount they receive
 		address tokenGive, // Address of token they give
 		uint256 amountGive, // Amount they give
-		uint256 timestamp);
-		
+		uint256 timestamp
+	);
+	
+	event Cancel(
+			// Attributes of an order
+		uint256 id,        // Unique identifier for order
+		address user,     // User who made the order
+		address tokenGet,  // Address of the token they receive
+		uint256 amountGet, // Amount they receive
+		address tokenGive, // Address of token they give
+		uint256 amountGive, // Amount they give
+		uint256 timestamp
+	);	
 
 	// Orders Mapping
 	struct _Order {
@@ -110,6 +125,30 @@ contract Exchange {
 			_amountGet,		
 			_tokenGive,		
 			_amountGive,	
+			block.timestamp 
+		);
+	}
+
+	function cancelOrder(uint256 _id) public {
+		// fetch Order
+		_Order storage _order = orders[_id];
+
+		// Order must exist
+		require(address(_order.user) == msg.sender);
+		// Cancel the order
+		require(_order.id == _id);
+		
+		// Cancel Order
+		orderCancelled[_id] = true;
+
+		// Emit event
+		emit Cancel(
+			_order.id, 	
+			msg.sender, 	
+			_order.tokenGet,  	
+			_order.amountGet,		
+			_order.tokenGive,		
+			_order.amountGive,	
 			block.timestamp 
 		);
 	}
