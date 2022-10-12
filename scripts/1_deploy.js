@@ -11,7 +11,7 @@ async function main(){
 
 
 	// Deploy contract
-	const dapp = await Token.deploy('LotRy','LOTR','1000000')	
+	const dapp = await Token.deploy('Dapp','Dapp','1000000')	
 	await dapp.deployed()	
 	console.log(`Dapp Deployed to: ${dapp.address}`)
 
