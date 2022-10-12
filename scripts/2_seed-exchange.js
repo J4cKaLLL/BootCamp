@@ -18,7 +18,7 @@ async function main(){
 	const {chainId} = await ethers.provider.getNetwork()
 	console.log("Using chainId: ", chainId)
 
-	const Dapp = await ethers.getContractAt('Token', config[chainId].Dapp.address )
+	const Dapp = await ethers.getContractAt('Token', config[chainId].DApp.address )
 	console.log (`Dapp Token Fetched: ${Dapp.address}\n`)
 
 	const mETH = await ethers.getContractAt('Token', config[chainId].mETH.address )
