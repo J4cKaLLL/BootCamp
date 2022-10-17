@@ -1,8 +1,13 @@
 import { useEffect, useState, useRef} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import dapp from '../assets/dapp.svg';
 import eth from '../assets/eth.svg';
-import { useSelector, useDispatch } from 'react-redux';
-import { loadBalances, transferTokens} from '../store/interactions';
+
+import { 
+  loadBalances, 
+  transferTokens
+} from '../store/interactions';
 
 const Balance = () => {
   const [isDeposit, setIsDeposit] = useState(true)
@@ -35,11 +40,10 @@ const Balance = () => {
 
   const amountHandler = (e, token) => {
     if(token.address === tokens[0].address){
-      setToken1TransferAmount(e.target.value)
+      setToken1TransferAmount(e.target.value)     
     } else {
-      setToken2TransferAmount(e.target.value)
-    }  
-    console.log(token2TransferAmount)  
+      setToken2TransferAmount(e.target.value)    
+    }       
   }
 
   const depositHandler = (e, token) => {
@@ -53,11 +57,24 @@ const Balance = () => {
     } 
   }
 
-  useEffect(() => {
-    if(exchange && tokens[0] && tokens[1] && account) {
-      loadBalances(exchange, tokens, account, dispatch)   
+  const withdrawHandler = (e, token) => {
+    e.preventDefault()
+    if(token.address === tokens[0].address){  
+      transferTokens(provider, exchange, 'Withdraw', token, token1TransferAmount, dispatch)
+      setToken1TransferAmount(0)
+      
+    } else {
+      transferTokens(provider, exchange, 'Withdraw', token, token2TransferAmount, dispatch)
+      setToken2TransferAmount(0)
+      console.log('withdrawing tokens 2')
     }
     
+  }
+
+  useEffect(() => {
+    if(exchange && tokens[0] && tokens[1] && account) {
+      loadBalances(exchange, tokens, account, dispatch) 
+    }    
   },[exchange, tokens, account, transferInProgress])
 
   return (
@@ -79,7 +96,7 @@ const Balance = () => {
           <p><small>Exchange</small><br/>{exchangeBalances && exchangeBalances[0]}</p>
         </div>
 
-        <form onSubmit={(e) => depositHandler(e, tokens[0])}>
+        <form onSubmit={isDeposit ? (e) => depositHandler(e, tokens[0]) : (e) => withdrawHandler (e, tokens[0])}>
           <label htmlFor="token0">{symbols && symbols[0]} Amount</label>
           <input 
           type="text" 
@@ -109,13 +126,13 @@ const Balance = () => {
           <p><small>Exchange</small><br/>{exchangeBalances && exchangeBalances[1]}</p>
         </div>
 
-        <form onSubmit={(e) => depositHandler(e, tokens[1])}>
+        <form onSubmit={isDeposit ? (e) => depositHandler(e, tokens[1]) : (e) => withdrawHandler (e, tokens[1])}>
           <label htmlFor="token1"></label>
           <input 
           type="text" 
           id='token1' 
           placeholder='0.0000' 
-          value={token1TransferAmount === 0 ? '' : token2TransferAmount}
+          value={token2TransferAmount === 0 ? '' : token2TransferAmount}
           onChange={(e) => amountHandler(e, tokens[1])}/>
           <button className='button' type='submit'>
             {isDeposit ? (
